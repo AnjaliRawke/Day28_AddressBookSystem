@@ -236,7 +236,6 @@ public class AddressBookMain {
 
 			e.printStackTrace();
 		}
-
 		CSVReader reader = new CSVReaderBuilder(fileReader).build();
 
 		List<String[]> linesOfData = null;
