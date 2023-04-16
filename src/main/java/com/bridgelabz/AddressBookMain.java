@@ -4,8 +4,15 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -262,6 +269,63 @@ public class AddressBookMain {
 		}
 	}
 
+	private static void writeToJSONFile(){
+		String jsonPath = "C:\\Users\\pramo\\JavaApp\\Day28_AddressBook\\src\\main\\java\\com\\bridgelabz\\AddressBooks.json";
+
+		try {
+			FileWriter fileWriter = new FileWriter(jsonPath);
+			Gson gson = new GsonBuilder().registerTypeAdapter(ContactPerson.class,
+					new TypeAdapter<String>() {
+						@Override
+						public void write(JsonWriter jsonWriter, String contact) throws IOException{
+							jsonWriter.value(contact.toString());
+						}
+						@Override
+						public String read(JsonReader jsonReader) throws IOException{
+							return jsonReader.nextString();
+						}
+					}).create();
+			addressBookMap.values().stream().forEach(contact -> {
+				String contactDataString = contact.toString().concat("\n");
+				gson.toJson(contactDataString,fileWriter);
+			});
+			fileWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void readFromJSONFile(){
+		String jsonPath = "C:\\Users\\pramo\\JavaApp\\Day28_AddressBook\\src\\main\\java\\com\\bridgelabz\\AddressBooks.json";
+
+		try {
+			FileReader fileReader = new FileReader(jsonPath);
+			Type type = new TypeToken<HashMap<String,AddressBook>>(){}.getType();
+			Gson gson = new GsonBuilder().registerTypeAdapter(ContactPerson.class,
+					new TypeAdapter<String>() {
+						@Override
+						public void write(JsonWriter jsonWriter, String contact) throws IOException{
+							jsonWriter.value(contact.toString());
+						}
+						@Override
+						public String read(JsonReader jsonReader) throws IOException{
+							return jsonReader.nextString();
+						}
+					}).create();
+			System.out.println("Reading from : " + jsonPath + "\n");
+			List<String> theList = gson.fromJson(fileReader,type);
+			fileReader.close();
+			for (String contact : theList){
+				System.out.println(contact.toString());
+			}
+
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+
 
 
 	public static void main(String[] args) {
@@ -279,11 +343,13 @@ public class AddressBookMain {
 			System.out.println("6. Display Dictionary of Address Books");
 			System.out.println("7. Display Address Books Contacts");
 			System.out.println("8. Display Contacts in Sorted Order based on particular details");
-			System.out.println("9. Write From File");
+			System.out.println("9. Write to File");
 			System.out.println("10. Read From file");
 			System.out.println("11. Write to CSVFile");
 			System.out.println("12. Read from CSVFile");
-			System.out.println("13. exit");
+			System.out.println("13. Write to JSONFile");
+			System.out.println("14. Read from JSONFile");
+			System.out.println("15. exit");
 			int choice = in.nextInt();
 
 			switch (choice) {
@@ -329,6 +395,12 @@ public class AddressBookMain {
 					break;
 				case 12:
 					readFromCSVFile();
+					break;
+				case 13:
+					writeToJSONFile();
+					break;
+				case 14:
+					readFromJSONFile();
 					break;
 				default:
 					status=false;
